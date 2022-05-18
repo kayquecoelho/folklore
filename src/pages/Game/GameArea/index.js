@@ -1,28 +1,35 @@
-import styled from "styled-components";
 import { useState, useRef } from "react";
-import ReactPlayer from "react-player/lazy";
 import { BsFillArrowLeftSquareFill } from "react-icons/bs";
+import styled from "styled-components";
+import ReactPlayer from "react-player/lazy";
+
 import useSongContext from "../../../hooks/useSongContext";
-import Lyrics from "./Lyrics";
+import useGameContext from "../../../hooks/useGameContext";
+import Line from "./Lyrics";
+
 
 export default function GameArea() {
   const [readyToStart, setReadyToStart] = useState(false);
   const { encryptedSongData } = useSongContext();
   const [currentLine, setCurrentLine] = useState(0);
+  const { input, cursorPosition } = useGameContext();
   const lyricsBox = useRef(null);
 
   function handleProgress(progress) {
     const current = encryptedSongData.lyrics.findIndex(
       (line) => line.endTime >= progress.playedSeconds
     );
+    if (current > cursorPosition.lineIndex) console.log("deveria parar")
+
     if (current === currentLine) return;
-    if (current === -1) return setCurrentLine(encryptedSongData.lyrics.length - 1);
+    if (current === -1)
+      return setCurrentLine(encryptedSongData.lyrics.length - 1);
 
     setCurrentLine(current);
     lyricsBox.current.scrollTo({
-      top: currentLine === 0 ? 0: 40 * (currentLine + 1),
+      top: currentLine === 0 ? 0 : 40 * (currentLine + 1),
       left: 0,
-      behavior: "smooth"
+      behavior: "smooth",
     });
   }
 
@@ -37,19 +44,45 @@ export default function GameArea() {
         controls={true}
         onProgress={handleProgress}
         progressInterval={400}
+        onPlay={() => input.current.focus()}
       />
       <LyricsBox ref={lyricsBox}>
-        {encryptedSongData.lyrics.map(line => <Lyrics {...line} /> )}
+        {encryptedSongData.lyrics.map((line) => (
+          <Line {...line} key={line.part} />
+        ))}
       </LyricsBox>
     </Container>
   );
 }
 
 function ConfirmModal({ setReadyToStart }) {
+  const { encryptedSongData } = useSongContext();
+  const { setValidLines, setCursorPosition } = useGameContext();
+  const linesToEncrypt = encryptedSongData.lyrics.map((line, index) => {
+    if (line.text.toEncrypt.length > 0) {
+      return index;
+    }
+    return false;
+  });
+
+  const validLines = linesToEncrypt.filter((line) => line !== false);
+  const lineIndex = validLines[0];
+  const wordIndex = Number(encryptedSongData.lyrics[lineIndex].text.toEncrypt[0]);
+
+  function startGame() {
+    setValidLines(validLines);
+    setCursorPosition({
+      lineIndex,
+      wordIndex,
+      letterIndex: 0,
+    });
+    setReadyToStart(true);
+  }
+
   return (
     <Container>
       <Level>Chosen Level</Level>
-      <FakeGameArea onClick={() => setReadyToStart(true)}>
+      <FakeGameArea onClick={startGame}>
         {" "}
         Press here to start the game{" "}
       </FakeGameArea>
@@ -64,7 +97,7 @@ const LyricsBox = styled.ul`
 
   margin-top: 40px;
   overflow: hidden;
-`
+`;
 
 const Container = styled.div`
   width: 90%;
