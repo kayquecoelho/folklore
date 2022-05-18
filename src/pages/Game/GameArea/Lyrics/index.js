@@ -2,23 +2,26 @@ import styled from "styled-components";
 import { useState } from "react";
 import useGameContext from "../../../../hooks/useGameContext";
 import useSongContext from "../../../../hooks/useSongContext";
+import getValidLetters from "../../../../utils/getValidLetters";
+import getNextIndexOfArray from "../../../../utils/getNextIndexOfArray";
 
 export default function Line({ text, part }) {
-  const { lineContent, toEncrypt } = text;
+  const { lineContent, wordsToEncrypt } = text;
   const { cursorPosition } = useGameContext();
-
-  if (toEncrypt.length === 0) return <Lyric>{lineContent.join(" ")}</Lyric>;
+  
+  if (wordsToEncrypt.length === 0)
+    return <Lyric>{lineContent.join(" ")}</Lyric>;
 
   return (
     <Lyric>
-      {lineContent.map((word, index) => (
+      {lineContent.map((word, indexOfWord) => (
         <Word
-          key={index}
+          key={indexOfWord}
           word={word.split("")}
-          encrypted={toEncrypt.includes(index + "")}
-          isCurrentWord={cursorPosition.wordIndex === index}
+          encrypted={wordsToEncrypt.includes(indexOfWord)}
+          isCurrentWord={cursorPosition.wordIndex === indexOfWord}
           isCurrentLine={cursorPosition.lineIndex === part - 1}
-          toEncrypt={toEncrypt}
+          wordsToEncrypt={wordsToEncrypt}
         />
       ))}
     </Lyric>
@@ -30,33 +33,26 @@ function Word({
   encrypted,
   isCurrentWord,
   isCurrentLine,
-  toEncrypt,
+  wordsToEncrypt,
 }) {
   const ignore = ["'", ",", '"', "."];
-  const validIndexes = word
-    .map((letter, index) => {
-      if (ignore.includes(letter)) {
-        return false;
-      }
-      return index;
-    })
-    .filter((index) => index !== false);
+  const validLetters = getValidLetters(word, ignore);
 
   if (!encrypted) return word.join("") + " ";
 
   return (
     <b>
       &nbsp;
-      {word.map((letter, index) => (
+      {word.map((letter, indexOfLetter) => (
         <EncryptedLetter
-          key={index}
-          letter={letter}
-          index={index}
+          key={indexOfLetter}
+          indexOfLetter={indexOfLetter}
           isCurrentWord={isCurrentWord}
           isCurrentLine={isCurrentLine}
           toIgnore={ignore.includes(letter)}
-          validIndexes={validIndexes}
-          toEncrypt={toEncrypt}
+          letter={letter}
+          validLetters={validLetters}
+          wordsToEncrypt={wordsToEncrypt}
         />
       ))}
       &nbsp;
@@ -65,60 +61,44 @@ function Word({
 }
 
 function EncryptedLetter({
-  letter,
   isCurrentWord,
   isCurrentLine,
+  indexOfLetter,
+  letter,
   toIgnore,
-  validIndexes,
-  index,
-  toEncrypt,
+  validLetters,
+  wordsToEncrypt,
 }) {
   const [reveal, setReveal] = useState(false);
-  const { input, cursorPosition, setCursorPosition, validLines } = useGameContext();
+  const { input, cursorPosition, setCursorPosition, validLines } =
+    useGameContext();
   const { encryptedSongData } = useSongContext();
 
   function handleKeydown(e) {
-    e.preventDefault();
     if (e.key.toLowerCase() === letter.toLowerCase()) {
       setReveal(true);
-      const nextLetter = validIndexes.indexOf(cursorPosition.letterIndex) + 1;
-      
-      if (!validIndexes[nextLetter]) {
-        const nextWord = toEncrypt.indexOf(cursorPosition.wordIndex + "") + 1;
 
-        if (!toEncrypt[nextWord]) {
-          const nextLine = validLines.indexOf(cursorPosition.lineIndex) + 1;
-
-          if (!validLines[nextLine]) {}
-          const wordIndex = Number(encryptedSongData.lyrics[nextLine].text.toEncrypt[0]);
-
-          return setCursorPosition({
-            wordIndex,
-            letterIndex: 0,
-            lineIndex: validLines[nextLine],
-          });
-        }        
-
-        return setCursorPosition({
-          ...cursorPosition,
-          letterIndex: 0,
-          wordIndex: Number(toEncrypt[nextWord]),
-        });
-      }
-
-      setCursorPosition({
-        ...cursorPosition,
-        letterIndex: validIndexes[nextLetter],
-      });
+      changeCursorPosition(
+        validLetters,
+        wordsToEncrypt,
+        setCursorPosition,
+        validLines,
+        encryptedSongData,
+        cursorPosition
+      );
     }
   }
 
   if (toIgnore) return letter;
 
-  if (cursorPosition.letterIndex === index && isCurrentWord && isCurrentLine) {
+  if (
+    indexOfLetter === cursorPosition.letterIndex &&
+    isCurrentWord &&
+    isCurrentLine
+  ) {
     return (
-      <Cursor ref={input} tabIndex="-1" onKeyDown={handleKeydown}>
-        <Circle />
+      <Cursor ref={input} autoFocus={true} onKeyDown={handleKeydown}>
+        {reveal ? letter : <Circle />}
       </Cursor>
     );
   }
@@ -126,7 +106,57 @@ function EncryptedLetter({
   return reveal ? letter : <Circle />;
 }
 
-const Cursor = styled.i`
+function changeCursorPosition(
+  validLetters,
+  wordsToEncrypt,
+  setCursorPosition,
+  validLines,
+  encryptedSongData,
+  cursorPosition
+) {
+  const { letterIndex, wordIndex, lineIndex } = cursorPosition;
+  const nextLetter = getNextIndexOfArray(validLetters, letterIndex);
+  const { lyrics } = encryptedSongData;
+
+  const nextValidLetter = validLetters[nextLetter];
+
+  if (!nextValidLetter) {
+    const nextWord = getNextIndexOfArray(wordsToEncrypt, wordIndex);
+    const nextValidWord = wordsToEncrypt[nextWord];
+
+    if (!nextValidWord) {
+      const nextLine = getNextIndexOfArray(validLines, lineIndex);
+      const nextValidLine = validLines[nextLine];
+
+      if (!nextValidLine) {
+      }
+
+      const wordIndex = lyrics[nextValidLine].text.wordsToEncrypt[0];
+
+      return setCursorPosition({
+        lineIndex: nextValidLine,
+        wordIndex,
+        letterIndex: 0,
+      });
+    }
+
+    return setCursorPosition({
+      ...cursorPosition,
+      wordIndex: wordsToEncrypt[nextWord],
+      letterIndex: 0,
+    });
+  }
+
+  setCursorPosition({
+    ...cursorPosition,
+    letterIndex: validLetters[nextLetter],
+  });
+}
+
+const Cursor = styled.button`
+  all: unset;
+  box-sizing: border-box;
+
   background-color: #8b12e8;
   width: 10px;
   height: 20px;

@@ -32,9 +32,10 @@ export default function encryptLyrics(songData, levelPercentage) {
 
   const formattedData = lyrics.map((line, index) => {
     if (chosen[index] !== undefined) {
-      return { lineContent: line, toEncrypt: Object.keys(chosen[index]) };
+      const wordsToEncrypt = Object.keys(chosen[index]).map(word => Number(word));
+      return { lineContent: line, wordsToEncrypt };
     } else {
-      return { lineContent: line, toEncrypt: [] };
+      return { lineContent: line, wordsToEncrypt: [] };
     }
   });
   

@@ -6,7 +6,7 @@ import ReactPlayer from "react-player/lazy";
 import useSongContext from "../../../hooks/useSongContext";
 import useGameContext from "../../../hooks/useGameContext";
 import Line from "./Lyrics";
-
+import getValidLines from "../../../utils/getValidLines";
 
 export default function GameArea() {
   const [readyToStart, setReadyToStart] = useState(false);
@@ -58,16 +58,10 @@ export default function GameArea() {
 function ConfirmModal({ setReadyToStart }) {
   const { encryptedSongData } = useSongContext();
   const { setValidLines, setCursorPosition } = useGameContext();
-  const linesToEncrypt = encryptedSongData.lyrics.map((line, index) => {
-    if (line.text.toEncrypt.length > 0) {
-      return index;
-    }
-    return false;
-  });
 
-  const validLines = linesToEncrypt.filter((line) => line !== false);
+  const validLines = getValidLines(encryptedSongData.lyrics);
   const lineIndex = validLines[0];
-  const wordIndex = Number(encryptedSongData.lyrics[lineIndex].text.toEncrypt[0]);
+  const wordIndex = Number(encryptedSongData.lyrics[lineIndex].text.wordsToEncrypt[0]);
 
   function startGame() {
     setValidLines(validLines);
