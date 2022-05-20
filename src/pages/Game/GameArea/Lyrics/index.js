@@ -2,13 +2,15 @@ import styled from "styled-components";
 import { useState } from "react";
 import useGameContext from "../../../../hooks/useGameContext";
 import useSongContext from "../../../../hooks/useSongContext";
+
 import getValidLetters from "../../../../utils/getValidLetters";
-import getNextIndexOfArray from "../../../../utils/getNextIndexOfArray";
+import determineWeight from "../../../../utils/determineWeight";
+import changeCursorPosition from "../../../../utils/changeCursorPosition";
 
 export default function Line({ text, part }) {
   const { lineContent, wordsToEncrypt } = text;
   const { cursorPosition } = useGameContext();
-  
+
   if (wordsToEncrypt.length === 0)
     return <Lyric>{lineContent.join(" ")}</Lyric>;
 
@@ -35,7 +37,7 @@ function Word({
   isCurrentLine,
   wordsToEncrypt,
 }) {
-  const ignore = ["'", ",", '"', "."];
+  const ignore = [",", ".", '"', "-", "?", "!"]
   const validLetters = getValidLetters(word, ignore);
 
   if (!encrypted) return word.join("") + " ";
@@ -70,13 +72,27 @@ function EncryptedLetter({
   wordsToEncrypt,
 }) {
   const [reveal, setReveal] = useState(false);
-  const { input, cursorPosition, setCursorPosition, validLines } =
-    useGameContext();
+  const {
+    input,
+    cursorPosition,
+    setCursorPosition,
+    validLines,
+    pointsSystem,
+    setPointsSystem,
+  } = useGameContext();
   const { encryptedSongData } = useSongContext();
 
   function handleKeydown(e) {
-    if (e.key.toLowerCase() === letter.toLowerCase()) {
+    let points = pointsSystem.points;
+    let streak = pointsSystem.streak;
+    
+    if (e.key.toLowerCase() === letter.normalize("NFD").toLowerCase()) {
       setReveal(true);
+
+      if (streak < 32) {
+        streak += 1;
+      }
+      points += pointsSystem.weight;
 
       changeCursorPosition(
         validLetters,
@@ -84,20 +100,24 @@ function EncryptedLetter({
         setCursorPosition,
         validLines,
         encryptedSongData,
-        cursorPosition
+        cursorPosition,
       );
+    } else {
+      if (streak > 0) {
+        streak -= 1;        
+      }
     }
+
+    const weight = determineWeight(streak);
+    setPointsSystem({points, streak, weight});
   }
 
-  if (toIgnore) return letter;
+  if (toIgnore) return letter; 
 
-  if (
-    indexOfLetter === cursorPosition.letterIndex &&
-    isCurrentWord &&
-    isCurrentLine
-  ) {
+  const isCurrentLetter = indexOfLetter === cursorPosition.letterIndex;
+  if (isCurrentLetter && isCurrentWord && isCurrentLine) {
     return (
-      <Cursor ref={input} autoFocus={true} onKeyDown={handleKeydown}>
+      <Cursor ref={input} tabIndex="-1" onKeyDown={handleKeydown}>
         {reveal ? letter : <Circle />}
       </Cursor>
     );
@@ -106,54 +126,7 @@ function EncryptedLetter({
   return reveal ? letter : <Circle />;
 }
 
-function changeCursorPosition(
-  validLetters,
-  wordsToEncrypt,
-  setCursorPosition,
-  validLines,
-  encryptedSongData,
-  cursorPosition
-) {
-  const { letterIndex, wordIndex, lineIndex } = cursorPosition;
-  const nextLetter = getNextIndexOfArray(validLetters, letterIndex);
-  const { lyrics } = encryptedSongData;
-
-  const nextValidLetter = validLetters[nextLetter];
-
-  if (!nextValidLetter) {
-    const nextWord = getNextIndexOfArray(wordsToEncrypt, wordIndex);
-    const nextValidWord = wordsToEncrypt[nextWord];
-
-    if (!nextValidWord) {
-      const nextLine = getNextIndexOfArray(validLines, lineIndex);
-      const nextValidLine = validLines[nextLine];
-
-      if (!nextValidLine) {
-      }
-
-      const wordIndex = lyrics[nextValidLine].text.wordsToEncrypt[0];
-
-      return setCursorPosition({
-        lineIndex: nextValidLine,
-        wordIndex,
-        letterIndex: 0,
-      });
-    }
-
-    return setCursorPosition({
-      ...cursorPosition,
-      wordIndex: wordsToEncrypt[nextWord],
-      letterIndex: 0,
-    });
-  }
-
-  setCursorPosition({
-    ...cursorPosition,
-    letterIndex: validLetters[nextLetter],
-  });
-}
-
-const Cursor = styled.button`
+const Cursor = styled.i`
   all: unset;
   box-sizing: border-box;
 

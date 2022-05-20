@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { BsFillArrowLeftSquareFill } from "react-icons/bs";
 import styled from "styled-components";
 import ReactPlayer from "react-player/lazy";
@@ -15,11 +15,15 @@ export default function GameArea() {
   const { input, cursorPosition } = useGameContext();
   const lyricsBox = useRef(null);
 
+  useEffect(() => {
+    input.current?.focus();
+  }, [cursorPosition]);
+
   function handleProgress(progress) {
     const current = encryptedSongData.lyrics.findIndex(
       (line) => line.endTime >= progress.playedSeconds
     );
-    if (current > cursorPosition.lineIndex) console.log("deveria parar")
+    if (current > cursorPosition.lineIndex) console.log("deveria parar");
 
     if (current === currentLine) return;
     if (current === -1)
@@ -61,7 +65,7 @@ function ConfirmModal({ setReadyToStart }) {
 
   const validLines = getValidLines(encryptedSongData.lyrics);
   const lineIndex = validLines[0];
-  const wordIndex = Number(encryptedSongData.lyrics[lineIndex].text.wordsToEncrypt[0]);
+  const wordIndex = encryptedSongData.lyrics[lineIndex].text.wordsToEncrypt[0];
 
   function startGame() {
     setValidLines(validLines);
@@ -77,8 +81,7 @@ function ConfirmModal({ setReadyToStart }) {
     <Container>
       <Level>Chosen Level</Level>
       <FakeGameArea onClick={startGame}>
-        {" "}
-        Press here to start the game{" "}
+        Press here to start the game
       </FakeGameArea>
       <GetBackButton />
     </Container>

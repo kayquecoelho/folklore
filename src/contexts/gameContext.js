@@ -10,6 +10,11 @@ export default function GameProvider({ children }) {
     letterIndex: 0,
   });
   const [validLines, setValidLines] = useState();
+  const [pointsSystem, setPointsSystem] = useState({
+    points: 0,
+    streak: 0,
+    weight: 0
+  });
 
   return (
     <GameContext.Provider
@@ -19,6 +24,8 @@ export default function GameProvider({ children }) {
         setCursorPosition,
         setValidLines,
         validLines,
+        pointsSystem,
+        setPointsSystem
       }}
     >
       {children}
