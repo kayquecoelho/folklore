@@ -13,7 +13,11 @@ export default function GameProvider({ children }) {
   const [pointsSystem, setPointsSystem] = useState({
     points: 0,
     streak: 0,
-    weight: 0
+    weight: {
+      value: 1,
+      minValue: 0,
+      maxValue: 12
+    }
   });
 
   return (
