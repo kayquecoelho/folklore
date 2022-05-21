@@ -14,14 +14,24 @@ export default function GameArea() {
   const [readyToStart, setReadyToStart] = useState(false);
   const { encryptedSongData } = useSongContext();
   const [currentLine, setCurrentLine] = useState(0);
-  const { input, cursorPosition, pointsSystem } = useGameContext();
+  const {
+    input,
+    cursorPosition,
+    pointsSystem,
+    showFocusModal,
+    setShowFocusModal,
+  } = useGameContext();
   const lyricsBox = useRef(null);
+  const player = useRef(null);
   const [paused, setPaused] = useState(false);
 
   useEffect(() => {
-    input.current?.focus({preventScroll: true});
-    if(paused && cursorPosition.lineIndex >= currentLine) {
+    input.current?.focus({ preventScroll: true });
+
+    if (paused && cursorPosition.lineIndex > currentLine) {
       setPaused(false);
+      const line = encryptedSongData.lyrics[currentLine];
+      player.current.seekTo(line.startTime);
     }
   }, [cursorPosition]);
 
@@ -29,9 +39,10 @@ export default function GameArea() {
     const current = encryptedSongData.lyrics.findIndex(
       (line) => line.endTime >= progress.playedSeconds
     );
+
     if (current > cursorPosition.lineIndex) {
-      setPaused(true)
-    };
+      return setPaused(true);
+    }
 
     if (current === currentLine || current === -1) return;
 
@@ -60,6 +71,7 @@ export default function GameArea() {
         </div>
       </ScoreBoard>
       <ReactPlayer
+        ref={player}
         url={encryptedSongData.youtubeLink}
         width="100%"
         height="300px"
@@ -67,13 +79,30 @@ export default function GameArea() {
         onProgress={handleProgress}
         progressInterval={400}
         playing={!paused}
-        onPlay={() => input.current.focus()}
+        onPlay={() => input.current.focus({ preventScroll: true })}
+        config={{
+          youtube: {
+            playerVars: {
+              disablekb: 1,
+              fs: 0,
+            },
+          },
+        }}
       />
 
       <LyricsBox ref={lyricsBox}>
         {encryptedSongData.lyrics.map((line) => (
           <Line {...line} key={line.part} />
         ))}
+        <Box
+          onClick={() => {
+            input.current.focus({ preventScroll: true });
+            setShowFocusModal(false);
+          }}
+          show={showFocusModal}
+        >
+          <Message>Press here to continue</Message>
+        </Box>
       </LyricsBox>
     </Container>
   );
@@ -108,10 +137,44 @@ function ConfirmModal({ setReadyToStart }) {
   );
 }
 
+const Message = styled.div`
+  width: 500px;
+  height: 50px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 25px;
+  line-height: 25px;
+  font-weight: 500;
+
+  background-color: #499627;
+  border-radius: 10px;
+
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 0);
+  cursor: pointer;
+`;
+const Box = styled.div`
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: pointer;
+
+  display: ${(props) => (props.show ? "block" : "none")};
+
+  background-color: rgba(17, 23, 37, 0.5);
+`;
+
 const ScoreBoard = styled.div`
   width: 100%;
   height: 60px;
-  
+
   padding: 0 10px;
   border-radius: 10px;
   margin-bottom: 5px;
@@ -120,7 +183,7 @@ const ScoreBoard = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  
+
   font-size: 30px;
   line-height: 30px;
 
@@ -165,6 +228,7 @@ const LyricsBox = styled.ul`
   height: 80px;
 
   margin-top: 40px;
+  position: relative;
   overflow: hidden;
 `;
 

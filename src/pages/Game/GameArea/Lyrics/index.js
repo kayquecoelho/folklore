@@ -79,6 +79,7 @@ function EncryptedLetter({
     validLines,
     pointsSystem,
     setPointsSystem,
+    setShowFocusModal
   } = useGameContext();
   const { encryptedSongData } = useSongContext();
 
@@ -117,7 +118,7 @@ function EncryptedLetter({
   const isCurrentLetter = indexOfLetter === cursorPosition.letterIndex;
   if (isCurrentLetter && isCurrentWord && isCurrentLine) {
     return (
-      <Cursor ref={input} tabIndex="-1" onKeyDown={handleKeydown}>
+      <Cursor ref={input} tabIndex="-1" onKeyDown={handleKeydown} onBlur={() => setShowFocusModal(true)}>
         {reveal ? letter : <Circle />}
       </Cursor>
     );

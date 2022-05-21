@@ -16,9 +16,10 @@ export default function GameProvider({ children }) {
     weight: {
       value: 1,
       minValue: 0,
-      maxValue: 12
-    }
+      maxValue: 12,
+    },
   });
+  const [showFocusModal, setShowFocusModal] = useState(false);
 
   return (
     <GameContext.Provider
@@ -29,7 +30,9 @@ export default function GameProvider({ children }) {
         setValidLines,
         validLines,
         pointsSystem,
-        setPointsSystem
+        setPointsSystem,
+        showFocusModal,
+        setShowFocusModal
       }}
     >
       {children}
