@@ -23,9 +23,10 @@ export default function changeCursorPosition(
       const nextValidLine = validLines[nextLine];
 
       if (!nextValidLine) {
+        return setCursorPosition({lineIndex: 0, wordIndex: 0, letterIndex: 0})
       }
 
-      const wordIndex = lyrics[nextValidLine].text.wordsToEncrypt[0];
+      const wordIndex = lyrics[nextValidLine]?.text.wordsToEncrypt[0];
 
       return setCursorPosition({
         lineIndex: nextValidLine,

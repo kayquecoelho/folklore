@@ -1,8 +1,10 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
 export default function Header() {
+  const navigate = useNavigate();
 
-  return <Container> <Title>folklore</Title> </Container>
+  return <Container> <Title onClick={() => navigate("/")}>folklore</Title> </Container>
 }
 
 const Container = styled.header`

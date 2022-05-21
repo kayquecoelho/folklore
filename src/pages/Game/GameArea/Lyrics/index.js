@@ -86,8 +86,9 @@ function EncryptedLetter({
   function handleKeydown(e) {
     let points = pointsSystem.points;
     let streak = pointsSystem.streak;
+    const refLetter = letter.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
     
-    if (e.key.toLowerCase() === letter.normalize("NFD").toLowerCase()) {
+    if (e.key.toLowerCase() === refLetter) {
       setReveal(true);
 
       if (streak < 96) {

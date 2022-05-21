@@ -9,6 +9,7 @@ import useGameContext from "../../../hooks/useGameContext";
 import Line from "./Lyrics";
 import getValidLines from "../../../utils/getValidLines";
 import ProgressBar from "../../../components/ProgressBar";
+import EndGameModal from "../../../components/EndGameModal";
 
 export default function GameArea() {
   const [readyToStart, setReadyToStart] = useState(false);
@@ -24,6 +25,7 @@ export default function GameArea() {
   const lyricsBox = useRef(null);
   const player = useRef(null);
   const [paused, setPaused] = useState(false);
+  const [endedGame, setEndedGame] = useState(false);
 
   useEffect(() => {
     input.current?.focus({ preventScroll: true });
@@ -54,6 +56,11 @@ export default function GameArea() {
     });
   }
 
+  function getFocusBack() {
+    input.current.focus({ preventScroll: true });
+    setShowFocusModal(false);
+  }
+
   if (!readyToStart) return <ConfirmModal setReadyToStart={setReadyToStart} />;
 
   return (
@@ -77,6 +84,7 @@ export default function GameArea() {
         height="300px"
         controls={true}
         onProgress={handleProgress}
+        onEnded={() => setEndedGame(true)}
         progressInterval={400}
         playing={!paused}
         onPlay={() => input.current.focus({ preventScroll: true })}
@@ -94,16 +102,12 @@ export default function GameArea() {
         {encryptedSongData.lyrics.map((line) => (
           <Line {...line} key={line.part} />
         ))}
-        <Box
-          onClick={() => {
-            input.current.focus({ preventScroll: true });
-            setShowFocusModal(false);
-          }}
-          show={showFocusModal}
-        >
+        <FocusWarning onClick={getFocusBack} show={showFocusModal}>
           <Message>Press here to continue</Message>
-        </Box>
+        </FocusWarning>
       </LyricsBox>
+
+      <EndGameModal display={endedGame} setEndedGame={setEndedGame} /> 
     </Container>
   );
 }
@@ -149,7 +153,7 @@ const Message = styled.div`
   line-height: 25px;
   font-weight: 500;
 
-  background-color: #499627;
+  background-color: #224740;
   border-radius: 10px;
 
   position: absolute;
@@ -158,7 +162,8 @@ const Message = styled.div`
   transform: translate(-50%, 0);
   cursor: pointer;
 `;
-const Box = styled.div`
+
+const FocusWarning = styled.div`
   width: 100%;
   height: 100%;
   position: absolute;
@@ -168,7 +173,7 @@ const Box = styled.div`
 
   display: ${(props) => (props.show ? "block" : "none")};
 
-  background-color: rgba(17, 23, 37, 0.5);
+  background-color: rgba(0,0,0,0.8);
 `;
 
 const ScoreBoard = styled.div`
@@ -236,6 +241,7 @@ const Container = styled.div`
   width: 90%;
   max-width: 1000px;
 
+  position: relative;
   margin-top: 30px;
 `;
 
