@@ -14,23 +14,25 @@ export default function EncryptedLetter({
   validLetters,
   wordsToEncrypt,
 }) {
-  const [reveal, setReveal] = useState(false);
   const {
-    input,
     cursorPosition,
     setCursorPosition,
     validLines,
     pointsSystem,
     setPointsSystem,
-    setShowFocusModal
   } = useGameContext();
   const { encryptedSongData } = useSongContext();
+  
+  const [reveal, setReveal] = useState(false);
 
   function handleKeydown(e) {
     let points = pointsSystem.points;
     let streak = pointsSystem.streak;
-    const refLetter = letter.normalize('NFD').replace(/[\u0300-\u036f]/g, "").toLowerCase();
-    
+    const refLetter = letter
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
     if (e.key.toLowerCase() === refLetter) {
       setReveal(true);
 
@@ -45,28 +47,46 @@ export default function EncryptedLetter({
         setCursorPosition,
         validLines,
         encryptedSongData,
-        cursorPosition,
+        cursorPosition
       );
     } else {
       if (streak > 0) {
-        streak -= 1;        
+        streak -= 1;
       }
     }
 
     const weight = determineWeight(streak);
-    setPointsSystem({points, streak, weight});
+    setPointsSystem({ points, streak, weight });
   }
 
-  if (toIgnore) return letter; 
+  if (toIgnore) return letter;
 
   const isCurrentLetter = indexOfLetter === cursorPosition.letterIndex;
   if (isCurrentLetter && isCurrentWord && isCurrentLine) {
     return (
-      <Cursor ref={input} tabIndex="-1" onKeyDown={handleKeydown} onBlur={() => setShowFocusModal(true)}>
-        {reveal ? letter : <Circle />}
-      </Cursor>
+      <CursorComponent
+        reveal={reveal}
+        letter={letter}
+        handleKeydown={handleKeydown}
+      />
     );
   }
 
   return reveal ? letter : <Circle />;
+}
+
+function CursorComponent({ reveal, letter, handleKeydown }) {
+  const { input, setShowFocusModal, highlight } = useGameContext();
+
+  return (
+    <Cursor
+      ref={input}
+      tabIndex="-1"
+      onKeyDown={handleKeydown}
+      onBlur={() => setShowFocusModal(true)}
+      highlight={highlight}
+    >
+      {reveal ? letter : <Circle />}
+    </Cursor>
+  );
 }

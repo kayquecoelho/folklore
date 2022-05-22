@@ -11,7 +11,13 @@ import VideoPlayer from "../../../components/VideoPlayer";
 
 export default function GameArea() {
   const { encryptedSongData } = useSongContext();
-  const { input, cursorPosition, showFocusModal, setShowFocusModal } = useGameContext();
+  const {
+    input,
+    cursorPosition,
+    showFocusModal,
+    setShowFocusModal,
+    setHighlight,
+  } = useGameContext();
 
   const lyricsBox = useRef(null);
   const player = useRef(null);
@@ -31,6 +37,11 @@ export default function GameArea() {
 
     //eslint-disable-next-line
   }, [cursorPosition]);
+
+  useEffect(() => {
+    setInterval(() => setHighlight(prevHighlight => !prevHighlight), 400);
+    //eslint-disable-next-line
+  }, []);
 
   function getFocusBack() {
     input.current.focus({ preventScroll: true });

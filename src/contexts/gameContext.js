@@ -20,7 +20,8 @@ export default function GameProvider({ children }) {
     },
   });
   const [showFocusModal, setShowFocusModal] = useState(false);
-  const [level, setLevel] = useState({name: "", percentage: 0});
+  const [level, setLevel] = useState({ name: "", percentage: 0 });
+  const [highlight, setHighlight] = useState(false);
 
   return (
     <GameContext.Provider
@@ -36,6 +37,8 @@ export default function GameProvider({ children }) {
         setShowFocusModal,
         level,
         setLevel,
+        highlight,
+        setHighlight,
       }}
     >
       {children}

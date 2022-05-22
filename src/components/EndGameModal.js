@@ -1,21 +1,6 @@
 import styled from "styled-components";
-import useGameContext from "../hooks/useGameContext";
 
 export default function EndGameModal({ show, setEndedGame }) {
-  const { setPointsSystem } = useGameContext();
-
-  function restartGame() {
-    setPointsSystem({
-      points: 0,
-      streak: 0,
-      weight: {
-        value: 1,
-        minValue: 0,
-        maxValue: 12,
-      },
-    });
-    setEndedGame(false);
-  }
 
   function endGame() {
     
@@ -24,7 +9,7 @@ export default function EndGameModal({ show, setEndedGame }) {
   return (
     <Container show={show}>
       <span>Game completed!</span>
-      <Button onClick={restartGame}>Play again</Button>
+      <Button onClick={() => window.location.reload()}>Play again</Button>
       <Button onClick={endGame}>End Game</Button>
     </Container>
   );

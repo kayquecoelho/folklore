@@ -4,7 +4,9 @@ const Cursor = styled.i`
   all: unset;
   box-sizing: border-box;
 
-  background-color: #8b12e8;
+  
+  border-radius: 2px;
+  background-color: ${(props) => props.highlight ? "#35769d": "inherit"};
   width: 10px;
   height: 20px;
   display: flex;
