@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import useGameContext from "../hooks/useGameContext";
 
-export default function EndGameModal({ display, setEndedGame }) {
+export default function EndGameModal({ show, setEndedGame }) {
   const { setPointsSystem } = useGameContext();
 
   function restartGame() {
@@ -22,7 +22,7 @@ export default function EndGameModal({ display, setEndedGame }) {
   }
 
   return (
-    <Container display={display}>
+    <Container show={show}>
       <span>Game completed!</span>
       <Button onClick={restartGame}>Play again</Button>
       <Button onClick={endGame}>End Game</Button>
@@ -39,7 +39,7 @@ const Container = styled.div`
   height: 100%;
   background-color: rgba(0, 0, 0, 0.8);
 
-  display: ${(props) => (props.display ? "flex" : "none")};
+  display: ${(props) => (props.show ? "flex" : "none")};
 
   flex-direction: column;
   align-items: center;

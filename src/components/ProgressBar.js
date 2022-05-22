@@ -1,10 +1,10 @@
+import "react-circular-progressbar/dist/styles.css";
 import { buildStyles, CircularProgressbarWithChildren } from "react-circular-progressbar";
 import useGameContext from "../hooks/useGameContext";
 import RadialSeparators from "./RadialSeparators";
 
 export default function ProgressBar() {
   const { pointsSystem } = useGameContext();
-  console.log(pointsSystem);
 
   return (
     <CircularProgressbarWithChildren

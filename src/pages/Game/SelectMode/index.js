@@ -1,30 +1,36 @@
+import { useState } from "react";
 import { Title, Menu, ModeBox, ModeName, ModeDescription } from "./style";
 
-import useSongContext from "../../../hooks/useSongContext";
-import encryptLyrics from "../../../utils/encryptLyrics";
 import getGameModes from "../../../utils/gameModes";
+import useGameContext from "../../../hooks/useGameContext";
+import ConfirmModal from "../../../components/ConfirmModal";
 
 export default function SelectMode({ songData }) {
   const gameModes = getGameModes();
+  const [statusOfPage, setStatusOfPage] = useState("select");
+
+  if (statusOfPage === "confirm") {
+    return <ConfirmModal songData={songData} setStatusOfPage={setStatusOfPage} />
+  }
 
   return (
     <>
       <Title> Select a game mode </Title>
       <Menu>
         {gameModes.map((mode) => (
-          <Mode key={mode.name} {...mode} songData={songData} />
+          <Mode key={mode.name} {...mode} setStatusOfPage={setStatusOfPage}/>
         ))}
       </Menu>
     </>
   );
 }
 
-function Mode({ name, percentage, bgColor, songData }) {
-  const { setEncryptedSongData } = useSongContext();
+function Mode({ name, percentage, bgColor, setStatusOfPage }) {
+  const { setLevel } = useGameContext();
 
   function chooseMode() {
-    const encryptedLyrics = encryptLyrics(songData, percentage);
-    setEncryptedSongData(encryptedLyrics);
+    setLevel({ name, percentage });
+    setStatusOfPage("confirm");
   }
 
   return (

@@ -20,6 +20,7 @@ export default function GameProvider({ children }) {
     },
   });
   const [showFocusModal, setShowFocusModal] = useState(false);
+  const [level, setLevel] = useState({name: "", percentage: 0});
 
   return (
     <GameContext.Provider
@@ -32,7 +33,9 @@ export default function GameProvider({ children }) {
         pointsSystem,
         setPointsSystem,
         showFocusModal,
-        setShowFocusModal
+        setShowFocusModal,
+        level,
+        setLevel,
       }}
     >
       {children}

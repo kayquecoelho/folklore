@@ -1,29 +1,22 @@
-import "react-circular-progressbar/dist/styles.css";
 import { useState, useRef, useEffect } from "react";
-import { BsFillArrowLeftSquareFill } from "react-icons/bs";
-import styled from "styled-components";
-import ReactPlayer from "react-player/lazy";
 
 import useSongContext from "../../../hooks/useSongContext";
 import useGameContext from "../../../hooks/useGameContext";
-import Line from "./Lyrics";
-import getValidLines from "../../../utils/getValidLines";
-import ProgressBar from "../../../components/ProgressBar";
+
+import { Container, FocusWarning, LyricsBox, Message } from "./style";
+import Line from "../../../components/LineOfSong";
+import Score from "../../../components/Score";
 import EndGameModal from "../../../components/EndGameModal";
+import VideoPlayer from "../../../components/VideoPlayer";
 
 export default function GameArea() {
-  const [readyToStart, setReadyToStart] = useState(false);
   const { encryptedSongData } = useSongContext();
-  const [currentLine, setCurrentLine] = useState(0);
-  const {
-    input,
-    cursorPosition,
-    pointsSystem,
-    showFocusModal,
-    setShowFocusModal,
-  } = useGameContext();
+  const { input, cursorPosition, showFocusModal, setShowFocusModal } = useGameContext();
+
   const lyricsBox = useRef(null);
   const player = useRef(null);
+
+  const [currentLine, setCurrentLine] = useState(0);
   const [paused, setPaused] = useState(false);
   const [endedGame, setEndedGame] = useState(false);
 
@@ -35,67 +28,27 @@ export default function GameArea() {
       const line = encryptedSongData.lyrics[currentLine];
       player.current.seekTo(line.startTime);
     }
+
+    //eslint-disable-next-line
   }, [cursorPosition]);
-
-  function handleProgress(progress) {
-    const current = encryptedSongData.lyrics.findIndex(
-      (line) => line.endTime >= progress.playedSeconds
-    );
-
-    if (current > cursorPosition.lineIndex) {
-      return setPaused(true);
-    }
-
-    if (current === currentLine || current === -1) return;
-
-    setCurrentLine(current);
-    lyricsBox.current.scrollTo({
-      top: currentLine === 0 ? 0 : 40 * (currentLine + 1),
-      left: 0,
-      behavior: "smooth",
-    });
-  }
 
   function getFocusBack() {
     input.current.focus({ preventScroll: true });
     setShowFocusModal(false);
   }
 
-  if (!readyToStart) return <ConfirmModal setReadyToStart={setReadyToStart} />;
-
   return (
     <Container>
-      <ScoreBoard>
-        <div className="score">
-          <span>Points:</span>
-          <span className="points">{pointsSystem.points}</span>
-        </div>
-        <div className="bonus">
-          <span>Bonus: </span>
-          <div className="progress-bar">
-            <ProgressBar />
-          </div>
-        </div>
-      </ScoreBoard>
-      <ReactPlayer
-        ref={player}
-        url={encryptedSongData.youtubeLink}
-        width="100%"
-        height="300px"
-        controls={true}
-        onProgress={handleProgress}
-        onEnded={() => setEndedGame(true)}
-        progressInterval={400}
-        playing={!paused}
-        onPlay={() => input.current.focus({ preventScroll: true })}
-        config={{
-          youtube: {
-            playerVars: {
-              disablekb: 1,
-              fs: 0,
-            },
-          },
-        }}
+      <Score />
+
+      <VideoPlayer
+        player={player}
+        lyricsBox={lyricsBox}
+        currentLine={currentLine}
+        setCurrentLine={setCurrentLine}
+        paused={paused}
+        setPaused={setPaused}
+        setEndedGame={setEndedGame}
       />
 
       <LyricsBox ref={lyricsBox}>
@@ -107,168 +60,7 @@ export default function GameArea() {
         </FocusWarning>
       </LyricsBox>
 
-      <EndGameModal display={endedGame} setEndedGame={setEndedGame} /> 
+      <EndGameModal show={endedGame} setEndedGame={setEndedGame} />
     </Container>
   );
 }
-
-function ConfirmModal({ setReadyToStart }) {
-  const { encryptedSongData } = useSongContext();
-  const { setValidLines, setCursorPosition } = useGameContext();
-
-  const validLines = getValidLines(encryptedSongData.lyrics);
-  const lineIndex = validLines[0];
-  const wordIndex = encryptedSongData.lyrics[lineIndex].text.wordsToEncrypt[0];
-
-  function startGame() {
-    setValidLines(validLines);
-    setCursorPosition({
-      lineIndex,
-      wordIndex,
-      letterIndex: 0,
-    });
-    setReadyToStart(true);
-  }
-
-  return (
-    <Container>
-      <Level>Chosen Level</Level>
-      <FakeGameArea onClick={startGame}>
-        Press here to start the game
-      </FakeGameArea>
-      <GetBackButton />
-    </Container>
-  );
-}
-
-const Message = styled.div`
-  width: 500px;
-  height: 50px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  font-size: 25px;
-  line-height: 25px;
-  font-weight: 500;
-
-  background-color: #224740;
-  border-radius: 10px;
-
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translate(-50%, 0);
-  cursor: pointer;
-`;
-
-const FocusWarning = styled.div`
-  width: 100%;
-  height: 100%;
-  position: absolute;
-  top: 0;
-  left: 0;
-  cursor: pointer;
-
-  display: ${(props) => (props.show ? "block" : "none")};
-
-  background-color: rgba(0,0,0,0.8);
-`;
-
-const ScoreBoard = styled.div`
-  width: 100%;
-  height: 60px;
-
-  padding: 0 10px;
-  border-radius: 10px;
-  margin-bottom: 5px;
-  background-color: #111725;
-
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  font-size: 30px;
-  line-height: 30px;
-
-  .score {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-
-    .points {
-      height: 50px;
-      width: 120px;
-      border-radius: 5px;
-      padding-right: 10px;
-
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-
-      background-color: #224740;
-      color: #dcdddd;
-      font-family: "Red Hat Text", sans-serif;
-      font-size: 40px;
-      line-height: 40px;
-      font-weight: 700;
-      text-align: center;
-    }
-  }
-  .bonus {
-    display: flex;
-    gap: 5px;
-    align-items: center;
-
-    .progress-bar {
-      width: 50px;
-      height: 50px;
-    }
-  }
-`;
-
-const LyricsBox = styled.ul`
-  width: 100%;
-  height: 80px;
-
-  margin-top: 40px;
-  position: relative;
-  overflow: hidden;
-`;
-
-const Container = styled.div`
-  width: 90%;
-  max-width: 1000px;
-
-  position: relative;
-  margin-top: 30px;
-`;
-
-const Level = styled.p`
-  font-size: 26px;
-  line-height: 26px;
-`;
-
-const FakeGameArea = styled.div`
-  width: 100%;
-  height: 400px;
-
-  margin-top: 20px;
-  background-color: #161d2f;
-  border-radius: 5px;
-  font-size: 30px;
-  cursor: pointer;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-`;
-
-const GetBackButton = styled(BsFillArrowLeftSquareFill)`
-  margin-top: 20px;
-  font-size: 40px;
-  cursor: pointer;
-
-  color: #defead;
-`;
