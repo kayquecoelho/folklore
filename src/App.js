@@ -3,6 +3,7 @@ import Header from "./components/Header";
 import GameProvider from "./contexts/gameContext";
 import SongProvider from "./contexts/songContext";
 import Game from "./pages/Game/Game";
+import Home from "./pages/Home";
 import GlobalStyle from "./styles/globalStyle";
 import ResetStyleCSS from "./styles/reset";
 
@@ -16,7 +17,7 @@ export default function App() {
         <Router>
           <Header />
           <Routes>
-            <Route path="/" />
+            <Route path="/" element={<Home />} />
             <Route path="/login" />
             <Route path="/register" />
             <Route path="/play/:songId" element={<Game />} />

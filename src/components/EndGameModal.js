@@ -18,7 +18,7 @@ export default function EndGameModal({ display, setEndedGame }) {
   }
 
   function endGame() {
-
+    
   }
 
   return (
