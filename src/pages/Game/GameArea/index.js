@@ -3,7 +3,14 @@ import { useState, useRef, useEffect } from "react";
 import useSongContext from "../../../hooks/useSongContext";
 import useGameContext from "../../../hooks/useGameContext";
 
-import { BackwardButton, Container, FocusWarning, ForwardButton, LyricsBox, Message } from "./style";
+import {
+  BackwardButton,
+  Container,
+  FocusWarning,
+  ForwardButton,
+  LyricsBox,
+  Message,
+} from "./style";
 import Line from "../../../components/LineOfSong";
 import Score from "../../../components/Score";
 import EndGameModal from "../../../components/EndGameModal";
@@ -38,7 +45,7 @@ export default function GameArea() {
   }, [cursorPosition]);
 
   useEffect(() => {
-    setInterval(() => setHighlight(prevHighlight => !prevHighlight), 400);
+    setInterval(() => setHighlight((prevHighlight) => !prevHighlight), 400);
     //eslint-disable-next-line
   }, []);
 
@@ -55,8 +62,16 @@ export default function GameArea() {
     const startTime = encryptedSongData.lyrics[currentLine].startTime;
 
     player.current.seekTo(startTime);
-    setPaused(false)
+    setPaused(false);
     getFocusBack();
+  }
+
+  if (endedGame) {
+    return (
+      <Container>
+        <EndGameModal />
+      </Container>
+    );
   }
 
   return (
@@ -74,17 +89,18 @@ export default function GameArea() {
 
       <LyricsBox>
         {encryptedSongData.lyrics.map((line, index) => (
-          <Line {...line} key={line.part} position={(index - currentLine) * 40} />
+          <Line
+            {...line}
+            key={line.part}
+            position={(index - currentLine) * 40}
+          />
         ))}
         <FocusWarning onClick={getFocusBack} show={showFocusModal}>
           <Message>Press here to continue</Message>
         </FocusWarning>
 
         <BackwardButton onClick={getBackToStart} />
-        <ForwardButton />
       </LyricsBox>
-
-      <EndGameModal show={endedGame} setEndedGame={setEndedGame} />
     </Container>
   );
 }

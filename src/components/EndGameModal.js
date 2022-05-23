@@ -1,19 +1,40 @@
+import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
-export default function EndGameModal({ show, setEndedGame }) {
+import useGameContext from "../hooks/useGameContext";
+import useSongContext from "../hooks/useSongContext";
 
-  function endGame() {
-    
+export default function EndGameModal() {
+  const navigate = useNavigate();
+  const { pointsSystem } = useGameContext();
+  const { encryptedSongData } = useSongContext();
+
+  function getBackToHome() {
+    navigate("/");
+    window.location.reload();
   }
 
   return (
-    <Container show={show}>
+    <Container>
       <span>Game completed!</span>
+      <Message>
+        Congratulations! You did {pointsSystem.points} points playing the song{" "}
+        {encryptedSongData.name}!
+      </Message>
+
       <Button onClick={() => window.location.reload()}>Play again</Button>
-      <Button onClick={endGame}>End Game</Button>
+      <Button onClick={getBackToHome}>Back to home</Button>
     </Container>
   );
 }
+
+const Message = styled.div`
+  width: 500px;
+
+  margin-bottom: 30px;
+  font-size: 20px;
+  color: #3ca725;
+`;
 
 const Container = styled.div`
   position: absolute;
@@ -24,7 +45,7 @@ const Container = styled.div`
   height: 100%;
   background-color: rgba(0, 0, 0, 0.8);
 
-  display: ${(props) => (props.show ? "flex" : "none")};
+  display: flex;
 
   flex-direction: column;
   align-items: center;
@@ -43,19 +64,19 @@ const Container = styled.div`
 const Button = styled.button`
   width: 500px;
   height: 60px;
-  
+
   padding: 10px;
   border: none;
   border-radius: 2px;
-  
+
   cursor: pointer;
   background-color: #449dcf;
   font-size: 25px;
   line-height: 25px;
   font-weight: 500;
-  color: #FFF;
+  color: #fff;
   transition: all 0.2s ease;
-  
+
   &:hover {
     background-color: #44ace7;
     transform: scale(1.02);

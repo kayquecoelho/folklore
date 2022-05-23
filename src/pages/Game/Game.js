@@ -11,7 +11,7 @@ export default function Game() {
   const { songId } = useParams();
   const [songData, setSongData] = useState();
   const { songService } = useApi();
-  const { encryptedSongData } = useSongContext();;
+  const { encryptedSongData } = useSongContext();
 
   useEffect(() => {
     fetchSongData();
@@ -42,6 +42,7 @@ export default function Game() {
         ? <GameArea />
         : <SelectMode songData={songData} />
       }
+      
     </Container>
   );
 }
