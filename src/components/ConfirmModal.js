@@ -5,8 +5,12 @@ import useGameContext from "../hooks/useGameContext";
 import useSongContext from "../hooks/useSongContext";
 import encryptLyrics from "../utils/encryptLyrics";
 import getValidLines from "../utils/getValidLines";
+import { useParams } from "react-router-dom";
+import useApi from "../hooks/useApi";
 
 export default function ConfirmModal({ setStatusOfPage, songData }) {
+  const { songId } = useParams();
+  const { songService } = useApi();
   const { setEncryptedSongData } = useSongContext();
   const { setValidLines, setCursorPosition, level } = useGameContext();
 
@@ -23,6 +27,15 @@ export default function ConfirmModal({ setStatusOfPage, songData }) {
       wordIndex,
       letterIndex: 0,
     });
+    viewSong();
+  }
+
+  async function viewSong() {
+    try {
+      await songService.incrementViews(songId);
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   return (
