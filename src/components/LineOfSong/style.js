@@ -4,7 +4,6 @@ const Cursor = styled.i`
   all: unset;
   box-sizing: border-box;
 
-  
   border-radius: 2px;
   background-color: ${(props) => props.highlight ? "#35769d": "inherit"};
   width: 10px;
@@ -22,6 +21,11 @@ const Circle = styled.div`
 `;
 
 const Lyric = styled.li`
+  position: absolute;
+  top: ${(props) => `${props.position}px`};
+  left: 0;
+  transition: all 0.3s ease;
+
   width: 100%;
   height: 40px;
 

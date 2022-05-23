@@ -1,4 +1,6 @@
 import styled from "styled-components";
+import { GiFastBackwardButton } from "react-icons/gi";
+import { GiFastForwardButton } from "react-icons/gi";
 
 const Message = styled.div`
   width: 500px;
@@ -32,7 +34,7 @@ const FocusWarning = styled.div`
 
   display: ${(props) => (props.show ? "block" : "none")};
 
-  background-color: rgba(0,0,0,0.8);
+  background-color: rgba(0, 0, 0, 0.8);
 `;
 
 const LyricsBox = styled.ul`
@@ -52,4 +54,31 @@ const Container = styled.div`
   margin-top: 30px;
 `;
 
-export { Message, Container, FocusWarning, LyricsBox };
+const ForwardButton = styled(GiFastForwardButton)`
+  position: absolute;
+  top: 5px;
+  right: 10px;
+
+  font-size: 30px;
+  color: #eccd15;
+  cursor: pointer;
+`;
+
+const BackwardButton = styled(GiFastBackwardButton)`
+  position: absolute;
+  top: 5px;
+  left: 10px;
+
+  font-size: 30px;
+  color: #eccd15;
+  cursor: pointer;
+`;
+
+export {
+  Message,
+  Container,
+  FocusWarning,
+  LyricsBox,
+  ForwardButton,
+  BackwardButton,
+};

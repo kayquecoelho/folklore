@@ -4,7 +4,6 @@ import useSongContext from "../hooks/useSongContext";
 
 export default function VideoPlayer({
   player,
-  lyricsBox,
   setCurrentLine,
   currentLine,
   paused,
@@ -13,24 +12,25 @@ export default function VideoPlayer({
 }) {
   const { encryptedSongData } = useSongContext();
   const { cursorPosition, input } = useGameContext();
-
+  
   function handlePlayerProgress(progress) {
     const current = encryptedSongData.lyrics.findIndex(
-      (line) => line.endTime >= progress.playedSeconds
-    );
+      (line) =>
+      line.endTime >= progress.playedSeconds &&
+      line.startTime <= progress.playedSeconds
+      );
 
     if (current > cursorPosition.lineIndex) {
       return setPaused(true);
     }
 
     if (current === currentLine || current === -1) return;
-
     setCurrentLine(current);
-    lyricsBox.current.scrollTo({
-      top: currentLine === 0 ? 0 : 40 * (currentLine + 1),
-      left: 0,
-      behavior: "smooth",
-    });
+  }
+
+  function handleOnPlay() {
+    input.current.focus({ preventScroll: true });
+    setPaused(false);
   }
 
   return (
@@ -44,7 +44,7 @@ export default function VideoPlayer({
       onEnded={() => setEndedGame(true)}
       progressInterval={400}
       playing={!paused}
-      onPlay={() => input.current.focus({ preventScroll: true })}
+      onPlay={handleOnPlay}
       config={{
         youtube: {
           playerVars: {

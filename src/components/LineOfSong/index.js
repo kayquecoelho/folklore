@@ -3,15 +3,15 @@ import useGameContext from "../../hooks/useGameContext";
 import { Lyric } from "./style";
 import Word from "./Word";
 
-export default function Line({ text, part }) {
+export default function Line({ text, part, position }) {
   const { lineContent, wordsToEncrypt } = text;
   const { cursorPosition } = useGameContext();
 
   if (wordsToEncrypt.length === 0)
-    return <Lyric>{lineContent.join(" ")}</Lyric>;
+    return <Lyric position={position}>{lineContent.join(" ")}</Lyric>;
 
   return (
-    <Lyric>
+    <Lyric position={position}>
       {lineContent.map((word, indexOfWord) => (
         <Word
           key={indexOfWord}
